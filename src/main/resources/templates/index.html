@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Movie Graph Explorer</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f4f4;
+        }
+
+        header {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .search-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #222;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        .movie-title {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .recommendation {
+            padding: 15px;
+            margin-top: 10px;
+            background: #f0f0f0;
+            border-radius: 6px;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎬 Movie Graph Explorer</h1>
+    <p>Explore movies, actors, directors and recommendations</p>
+</header>
+
+<div class="container">
+
+    <div class="search-box">
+        <input
+            type="text"
+            id="movieTitle"
+            placeholder="Enter movie title, e.g. Inception"
+        >
+
+        <button onclick="searchMovie()">Search</button>
+    </div>
+
+    <div id="result"></div>
+
+    <div id="recommendations"></div>
+
+</div>
+
+<script>
+
+function searchMovie() {
+
+    const title = document.getElementById("movieTitle").value.trim();
+
+    if (!title) {
+        alert("Please enter a movie title.");
+        return;
+    }
+
+    document.getElementById("result").innerHTML =
+        "<div class='card'>Searching...</div>";
+
+    document.getElementById("recommendations").innerHTML = "";
+
+    fetch("/search?title=" + encodeURIComponent(title))
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            const result = document.getElementById("result");
+
+            if (data.message) {
+
+                result.innerHTML =
+                    "<div class='card message'>" +
+                    data.message +
+                    "</div>";
+
+                return;
+            }
+
+            result.innerHTML = `
+                <div class="card">
+
+                    <div class="movie-title">
+                        🎬 ${data.title}
+                    </div>
+
+                    <p>
+                        <b>Year:</b> ${data.year}
+                    </p>
+
+                    <p>
+                        <b>Actors:</b>
+                        ${data.actors.join(", ")}
+                    </p>
+
+                    <p>
+                        <b>Director:</b>
+                        ${data.directors.join(", ")}
+                    </p>
+
+                    <p>
+                        <b>Genre:</b>
+                        ${data.genres.join(", ")}
+                    </p>
+
+                </div>
+            `;
+
+            return fetch(
+                "/recommendations?title=" +
+                encodeURIComponent(title)
+            );
+        })
+
+        .then(response => {
+
+            if (!response) {
+                return null;
+            }
+
+            return response.json();
+        })
+
+        .then(recommendations => {
+
+            if (!recommendations) {
+                return;
+            }
+
+            let html = `
+                <div class="card">
+                    <h2>🎯 Recommended Movies</h2>
+            `;
+
+            if (recommendations.length === 0) {
+
+                html += `
+                    <p>No recommendations found.</p>
+                `;
+
+            } else {
+
+                recommendations.forEach(movie => {
+
+                    html += `
+                        <div class="recommendation">
+                            <h3>${movie.title}</h3>
+                            <p>Year: ${movie.year}</p>
+                        </div>
+                    `;
+
+                });
+            }
+
+            html += "</div>";
+
+            document.getElementById("recommendations").innerHTML =
+                html;
+        })
+
+        .catch(error => {
+
+            console.error(error);
+
+            document.getElementById("result").innerHTML =
+                `
+                <div class="card message">
+                    Something went wrong. Please try again.
+                </div>
+                `;
+        });
+}
+
+</script>
+
+</body>
+</html>
