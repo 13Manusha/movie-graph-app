@@ -45,7 +45,8 @@ CREATE
 CREATE
 (leonardo)-[:ACTED_IN]->(inception),
 (leonardo)-[:ACTED_IN]->(titanic),
-(christian)-[:ACTED_IN]->(darkKnight);
+(christian)-[:ACTED_IN]->(darkKnight),
+(christian)-[:ACTED_IN]->(inception);
 
 // ============================================
 // Director relationships
