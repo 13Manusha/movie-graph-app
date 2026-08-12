@@ -26,8 +26,8 @@ MATCH (a)-[:ACTED_IN]->(other:Movie)
 WHERE other.title <> $title
 RETURN DISTINCT other.title AS title, other.year AS year;
 
-// 6. Find movies connected through a shared actor
-MATCH (m1:Movie)-[:ACTED_IN] <-(a:Actor)-[:ACTED_IN]->(m2:Movie)
+/// 6. Find movies connected through a shared actor
+MATCH (m1:Movie)<-[:ACTED_IN]-(a:Actor)-[:ACTED_IN]->(m2:Movie)
 WHERE m1.title <> m2.title
 RETURN DISTINCT
     m1.title AS movie1,
